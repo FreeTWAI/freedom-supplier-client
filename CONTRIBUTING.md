@@ -5,7 +5,7 @@
 
 可 Fork 的供應端客戶端，讓供貨者讀取自己的中央商品與供貨申請。 Node 24 CLI 已提供 connect、products／requests／connection 私人 JSON 讀取。
 
-先看[本倉 Issues](https://github.com/FreeTWAI-AI/freedom-supplier-client/issues)與[現有 PR](https://github.com/FreeTWAI-AI/freedom-supplier-client/pulls)。提出問題、這一輪範圍、完成條件與可投入時間，在 Issue 認領並協調重疊工作；維護者已直接派工時不必重複等待，將約定連回交接即可。使用自己的 fork／分支，PR 送到 **FreeTWAI-AI/freedom-supplier-client:main**。
+先看[本倉 Issues](https://github.com/FreeTWAI/freedom-supplier-client/issues)與[現有 PR](https://github.com/FreeTWAI/freedom-supplier-client/pulls)。提出問題、這一輪範圍、完成條件與可投入時間，在 Issue 認領並協調重疊工作；維護者已直接派工時不必重複等待，將約定連回交接即可。使用自己的 fork／分支，PR 送到 **FreeTWAI/freedom-supplier-client:main**。
 
 交給 Agent 前先讓它讀 [AGENTS.md](AGENTS.md)。PR 寫明變更用途、使用者可見結果、驗證命令、限制與原 Issue；附上可公開的合成案例或重現方式。Issue／PR 是程式協作的記錄，平台名片與公會身分不取代 repo 維護者的審查。
 

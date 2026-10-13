@@ -11,12 +11,12 @@
 
 本 repo 的維護者負責「可 Fork 的供應端客戶端，讓供貨者讀取自己的中央商品與供貨申請。」這個模組；公會職稱與自填 GitHub slug 不授予寫入權。
 
-程式／內容入口：[src/index.mjs](src/index.mjs)、[client/](client/)、[scripts/run-client.mjs](scripts/run-client.mjs)、[scripts/verify-client-source.mjs](scripts/verify-client-source.mjs)、[tests/](tests/)。協作先讀 [CONTRIBUTING.md](CONTRIBUTING.md)，讓 Agent 讀 [AGENTS.md](AGENTS.md)；從[本倉 Issues](https://github.com/FreeTWAI-AI/freedom-supplier-client/issues)認領、[查看既有 PR](https://github.com/FreeTWAI-AI/freedom-supplier-client/pulls)避免重工。
+程式／內容入口：[src/index.mjs](src/index.mjs)、[client/](client/)、[scripts/run-client.mjs](scripts/run-client.mjs)、[scripts/verify-client-source.mjs](scripts/verify-client-source.mjs)、[tests/](tests/)。協作先讀 [CONTRIBUTING.md](CONTRIBUTING.md)，讓 Agent 讀 [AGENTS.md](AGENTS.md)；從[本倉 Issues](https://github.com/FreeTWAI/freedom-supplier-client/issues)認領、[查看既有 PR](https://github.com/FreeTWAI/freedom-supplier-client/pulls)避免重工。
 
-supplier:read 僅讀本人的資料；token 保存在 repo 外本人可讀檔案，不進 browser、source 或 Pages。client/ 由中央 helper 產生並由 client-source.lock.json 記來源；改共用 transport 先到中央 repo。 跨 repo 的協定由[中央平台](https://github.com/FreeTWAI-AI/freedom-platform)維護。
+supplier:read 僅讀本人的資料；token 保存在 repo 外本人可讀檔案，不進 browser、source 或 Pages。client/ 由中央 helper 產生並由 client-source.lock.json 記來源；改共用 transport 先到中央 repo。 跨 repo 的協定由[中央平台](https://github.com/FreeTWAI/freedom-platform)維護。
 <!-- freedom-repository-guide:end -->
 
-[開始刊登商品](https://freetwai.com/#supplier) · [Fork 我的客戶端](https://github.com/FreeTWAI-AI/freedom-supplier-client/fork) · [核准／撤銷讀取連線](https://freetwai.com/#account)
+[開始刊登商品](https://freetwai.com/#supplier) · [Fork 我的客戶端](https://github.com/FreeTWAI/freedom-supplier-client/fork) · [核准／撤銷讀取連線](https://freetwai.com/#account)
 
 這是供貨者可以 Fork、改造的第一本技能書。現在先在自由工坊網站刊登商品、整理供貨條件與處理合作申請；這個客戶端連回同一個中央平台，讀取**你自己的商品和供貨申請**。不需要重新輸入一份商品資料，也不建立另一套會員、資料庫或收款帳。
 
@@ -78,5 +78,7 @@ const workspace = await loadSupplierWorkspace(client);
 ```sh
 node scripts/verify-consumer-libraries.mjs FreeTWAI-AI/freedom-supplier-client EXPECTED_PLATFORM_SHA --source-root /path/to/platform
 ```
+
+The repository argument is the historical provenance identity required by this pinned verifier and `consumer-libraries.lock.json`. Current GitHub and clone URLs use `FreeTWAI`.
 
 Use `--remote` after the exact source is publicly reachable. Source verification does not establish release approval, installed governance or complete runtime coverage.
