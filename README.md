@@ -76,7 +76,9 @@ const workspace = await loadSupplierWorkspace(client);
 `consumer-libraries.lock.json` records source bytes separately from the unchanged preview contract and existing CLI source pin. Verify against an independently selected source SHA before publication:
 
 ```sh
-node scripts/verify-consumer-libraries.mjs FreeTWAI/freedom-supplier-client EXPECTED_PLATFORM_SHA --source-root /path/to/platform
+node scripts/verify-consumer-libraries.mjs FreeTWAI-AI/freedom-supplier-client EXPECTED_PLATFORM_SHA --source-root /path/to/platform
 ```
+
+The repository argument is the historical provenance identity required by this pinned verifier and `consumer-libraries.lock.json`. Current GitHub and clone URLs use `FreeTWAI`.
 
 Use `--remote` after the exact source is publicly reachable. Source verification does not establish release approval, installed governance or complete runtime coverage.
