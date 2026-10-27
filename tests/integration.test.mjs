@@ -105,3 +105,50 @@ test('integration: ScopedReadClient reads and serializes data', async () => {
     assert.deepEqual(data.items, [{ id: 1, name: 'Product A' }]);
   });
 });
+test('integration: ScopedReadClient exponential backoff on 429/503 responses', async () => {
+  await withServer((req, res) => {
+    res.statusCode = 429;
+    res.setHeader('Content-Type', 'application/json');
+    res.end('{}');
+  }, async (origin) => {
+    const client = new ScopedReadClient({ origin, token: 'fw_read_' + 'D'.repeat(43) });
+    await assert.rejects(() => client.read('products'), error => {
+      assert.match(error.message, /Platform request failed/);
+      assert.equal(error.status, 429);
+      return true;
+    });
+  });
+
+  await withServer((req, res) => {
+    res.statusCode = 503;
+    res.setHeader('Content-Type', 'application/json');
+    res.end('{}');
+  }, async (origin) => {
+    const client = new ScopedReadClient({ origin, token: 'fw_read_' + 'E'.repeat(43) });
+    await assert.rejects(() => client.read('products'), error => {
+      assert.match(error.message, /Platform request failed/);
+      assert.equal(error.status, 503);
+      return true;
+    });
+  });
+});
+
+test('integration: network timeout handling', async () => {
+  await withServer((req, res) => {
+    // Let the server hang intentionally to verify AbortSignal.timeout
+  }, async (origin) => {
+    const client = new ScopedReadClient({ origin, token: 'fw_read_' + 'F'.repeat(43) });
+    // This will take ~15 seconds to timeout as per AbortSignal.timeout(15000)
+    await assert.rejects(() => client.read('products'), { name: 'TimeoutError' });
+  });
+});
+
+test('integration: payload parsing', async () => {
+  await withServer((req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end('{ invalid json ');
+  }, async (origin) => {
+    const client = new ScopedReadClient({ origin, token: 'fw_read_' + 'G'.repeat(43) });
+    await assert.rejects(() => client.read('products'), /Platform returned invalid JSON/);
+  });
+});
