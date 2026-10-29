@@ -152,3 +152,48 @@ test('integration: payload parsing', async () => {
     await assert.rejects(() => client.read('products'), /Platform returned invalid JSON/);
   });
 });
+
+test('integration: supplier catalog read connections and listing synchronization', async () => {
+  await withServer((req, res) => {
+    assert.equal(req.headers.authorization, 'Bearer fw_read_' + 'H'.repeat(43));
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({
+      items: [{ id: 101, sku: 'PROD-A', price: 15.00 }],
+      read_only: true
+    }));
+  }, async (origin) => {
+    const client = new ScopedReadClient({ origin, token: 'fw_read_' + 'H'.repeat(43) });
+    const data = await client.read('catalog');
+    assert.equal(data.read_only, true);
+    assert.deepEqual(data.items, [{ id: 101, sku: 'PROD-A', price: 15.00 }]);
+  });
+
+  await withServer((req, res) => {
+    assert.equal(req.headers.authorization, 'Bearer fw_read_' + 'I'.repeat(43));
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({
+      items: [{ id: 201, sku: 'LISTING-1', status: 'active' }],
+      read_only: true
+    }));
+  }, async (origin) => {
+    const client = new ScopedReadClient({ origin, token: 'fw_read_' + 'I'.repeat(43) });
+    const data = await client.read('listings');
+    assert.equal(data.read_only, true);
+    assert.deepEqual(data.items, [{ id: 201, sku: 'LISTING-1', status: 'active' }]);
+  });
+});
+
+test('integration: supplier listing synchronization quota check (429)', async () => {
+  await withServer((req, res) => {
+    res.statusCode = 429;
+    res.setHeader('Content-Type', 'application/json');
+    res.end('{}');
+  }, async (origin) => {
+    const client = new ScopedReadClient({ origin, token: 'fw_read_' + 'J'.repeat(43) });
+    await assert.rejects(() => client.read('listings'), error => {
+      assert.match(error.message, /Platform request failed/);
+      assert.equal(error.status, 429);
+      return true;
+    });
+  });
+});
