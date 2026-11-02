@@ -48,9 +48,6 @@ async function runBenchmark() {
     console.log(`Total TCP connections established: ${connectionCount}`);
     console.log(`Total HTTP requests received: ${requestCount}`);
 
-    // fetch sometimes establishes a new connection for the first request internally then pools
-    // or retries might open new ones depending on keep-alive headers. As long as it's <= 2
-    // it's pooling effectively.
     if (connectionCount <= 2) {
       console.log('✅ Connection pooling (reuse) confirmed.');
     } else {
