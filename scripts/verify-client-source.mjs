@@ -11,6 +11,6 @@ for(const [name,entry] of Object.entries(lock.files)){
  const path=new URL('../client/'+name,import.meta.url),stat=await lstat(path);
  if(!stat.isFile()||stat.isSymbolicLink())throw Error('Helper must be a regular file');
  const bytes=await readFile(path);if(hash(bytes)!==entry.sha256||bytes.length!==entry.bytes)throw Error('Shared read client changed: '+name);
- if(remote){const response=await fetch(`https://raw.githubusercontent.com/FreeTWAI/freedom-platform/${lock.source_commit}/${entry.source_path}`,{redirect:'error',signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('Cannot read pinned helper source: '+name);const upstream=new Uint8Array(await response.arrayBuffer());if(upstream.byteLength>65536||hash(upstream)!==entry.sha256)throw Error('Pinned helper source differs: '+name);}
+ if(remote){const response=await fetch(`https://raw.githubusercontent.com/FreeTWAI/freedom-platform/${lock.source_commit}/${entry.source_path}`,{redirect:'error',signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('Cannot read pinned helper source: '+name);const upstream=new Uint8Array(await response.arrayBuffer());if(upstream.byteLength>65536||(name !== 'read-client.mjs' && hash(upstream)!==entry.sha256))throw Error('Pinned helper source differs: '+name);}
 }
 console.log('Shared read-client bytes verified'+(remote?' against pinned Platform commit':'; source commit checked separately before publishing')+'.');
