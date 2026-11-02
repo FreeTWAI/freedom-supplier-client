@@ -9,15 +9,42 @@ async function jsonRequest(origin,path,{method='GET',body,token,fetcher=fetch}={
  const headers={Accept:'application/json'};
  if(body!==undefined){headers['Content-Type']='application/json';headers.Origin=origin;}
  if(token)headers.Authorization='Bearer '+token;
- const response=await fetcher(origin+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(15000)});
- const chunks=[];let length=0;
- if(!response.body)throw Error('Platform response body missing.');
- const reader=response.body.getReader();
- try{while(true){const {value,done}=await reader.read();if(done)break;length+=value.byteLength;if(length>2*1024*1024)throw Error('Platform response too large.');chunks.push(value);}}finally{await reader.cancel();}
- const bytes=new Uint8Array(length);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
- let data;try{data=JSON.parse(new TextDecoder().decode(bytes));}catch{throw Error('Platform returned invalid JSON.');}
- if(!response.ok&&!(response.status===429&&data?.status==='slow_down')){const error=new Error('Platform request failed (HTTP '+response.status+'). Check the connection in your account.');error.status=response.status;throw error;}
- return data;
+
+ let attempt=0;
+ while(true){
+  attempt++;
+  let response;
+  try{
+   response=await fetcher(origin+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body),redirect:'error',signal:AbortSignal.timeout(15000)});
+  }catch(e){
+   if(attempt>=4)throw e;
+   await new Promise(r=>setTimeout(r,Math.min(500*(2**(attempt-1)),5000)));
+   continue;
+  }
+  const chunks=[];let length=0;
+  if(!response.body)throw Error('Platform response body missing.');
+  const reader=response.body.getReader();
+  try{while(true){const {value,done}=await reader.read();if(done)break;length+=value.byteLength;if(length>2*1024*1024)throw Error('Platform response too large.');chunks.push(value);}}finally{await reader.cancel();}
+  const bytes=new Uint8Array(length);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+
+  if(!response.ok){
+   let data;try{data=JSON.parse(new TextDecoder().decode(bytes));}catch{}
+   if(!(response.status===429&&data?.status==='slow_down')){
+    if([502,503,504].includes(response.status)&&attempt<4){
+     let delay=Math.min(500*(2**(attempt-1)),5000);
+     const retryAfter=response.headers.get('retry-after');
+     if(retryAfter&&!isNaN(parseInt(retryAfter,10)))delay=Math.max(delay,parseInt(retryAfter,10)*1000);
+     await new Promise(r=>setTimeout(r,delay));
+     continue;
+    }
+    const error=new Error('Platform request failed (HTTP '+response.status+'). Check the connection in your account.');error.status=response.status;throw error;
+   }
+   return data;
+  }
+
+  let data;try{data=JSON.parse(new TextDecoder().decode(bytes));}catch{throw Error('Platform returned invalid JSON.');}
+  return data;
+ }
 }
 export async function startPairing({origin='https://freetwai.com',kind,clientName,fetcher}={}){
  origin=platformOrigin(origin);
