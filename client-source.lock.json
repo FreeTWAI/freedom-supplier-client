@@ -5,13 +5,13 @@
   "files": {
     "read-client.mjs": {
       "source_path": "packages/client-connections/read-client.mjs",
-      "sha256": "b47e3449b7415b097e14ef75bd750a3c8bee893eb11b78aa3de0f794cdf4782d",
-      "bytes": 4020
+      "sha256": "55cd3d6e49ef5e2497967cfd3e5701a9118684ed550fe4e87fbaf5dad509d6fe",
+      "bytes": 4073
     },
     "cli.mjs": {
       "source_path": "packages/client-connections/cli.mjs",
-      "sha256": "106a19e6490764e6c5298ee0bfe0959cd69e56521b534d22ed81fbc79e5c0677",
-      "bytes": 3081
+      "sha256": "6fc283a30f8d760ef36fef81b2efde1f45c78db9354f5d23d3741da5ffe10409",
+      "bytes": 3088
     }
   }
 }

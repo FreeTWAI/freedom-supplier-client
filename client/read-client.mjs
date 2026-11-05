@@ -14,8 +14,8 @@ async function jsonRequest(origin,path,{method='GET',body,token,fetcher=fetch}={
  if(!response.body)throw Error('Platform response body missing.');
  const reader=response.body.getReader();
  try{while(true){const {value,done}=await reader.read();if(done)break;length+=value.byteLength;if(length>2*1024*1024)throw Error('Platform response too large.');chunks.push(value);}}finally{await reader.cancel();}
- const bytes=new Uint8Array(length);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
- let data;try{data=JSON.parse(new TextDecoder().decode(bytes));}catch{throw Error('Platform returned invalid JSON.');}
+ let buffer;if(chunks.length===1){buffer=chunks[0];}else{buffer=new Uint8Array(length);let offset=0;for(const chunk of chunks){buffer.set(chunk,offset);offset+=chunk.byteLength;}}
+ let data;try{data=JSON.parse(new TextDecoder().decode(buffer));}catch{throw Error('Platform returned invalid JSON.');}
  if(!response.ok&&!(response.status===429&&data?.status==='slow_down')){const error=new Error('Platform request failed (HTTP '+response.status+'). Check the connection in your account.');error.status=response.status;throw error;}
  return data;
 }
@@ -34,11 +34,11 @@ export async function pollPairing({origin='https://freetwai.com',deviceSecret,fe
  if(data.status==='authorized'&&(!tokenPattern.test(data.access_token??'')||!['storefront:read','supplier:read'].includes(data.scope)||data.read_only!==true||data.api_base_path!=='/client-api/v1'||!Number.isFinite(Date.parse(data.expires_at))))throw Error('Invalid approved connection response.');
  return data;
 }
+const paths={connection:'/connection',catalog:'/retail/catalog',stores:'/retail/stores',listings:'/retail/listings',products:'/supplier/products',requests:'/supplier/requests'};
 export class ScopedReadClient{
  #origin;#token;#fetcher;
  constructor({origin='https://freetwai.com',token,fetcher}={}){this.#origin=platformOrigin(origin);if(!tokenPattern.test(token??''))throw Error('Invalid read connection token.');this.#token=token;this.#fetcher=fetcher;}
  async read(resource){
- const paths={connection:'/connection',catalog:'/retail/catalog',stores:'/retail/stores',listings:'/retail/listings',products:'/supplier/products',requests:'/supplier/requests'};
  if(!Object.hasOwn(paths,resource))throw Error('Unsupported read resource.');
  const data=await jsonRequest(this.#origin,'/client-api/v1'+paths[resource],{token:this.#token,fetcher:this.#fetcher});
  if(data?.read_only!==true||(resource!=='connection'&&!Array.isArray(data.items)))throw Error('Invalid read connection response.');

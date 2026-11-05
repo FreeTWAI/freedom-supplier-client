@@ -26,7 +26,7 @@ if(mode==='connect'){
 }else if(mode==='read'){
  const source=await open(file,constants.O_RDONLY|constants.O_NOFOLLOW);
  let saved;try{const stat=await source.stat();if(!stat.isFile()||(stat.mode&0o077)||stat.size>65536)throw Error('Credential must be a small private regular file (chmod600).');const text=await source.readFile('utf8');try{saved=JSON.parse(text);}catch{throw Error('Private credential file contains invalid JSON. Reconnect in the platform.');}}finally{await source.close();}
- if(saved.format!=='freedom.read-connection/v1'||saved.origin!==origin||saved.scope!==kind+':read'||!Number.isFinite(Date.parse(saved.expires_at))||Date.parse(saved.expires_at)<=Date.now())throw Error('Credential origin/scope mismatch or expired. Reconnect in the platform.');
+ const expiresAt=Date.parse(saved.expires_at);if(saved.format!=='freedom.read-connection/v1'||saved.origin!==origin||saved.scope!==kind+':read'||!Number.isFinite(expiresAt)||expiresAt<=Date.now())throw Error('Credential origin/scope mismatch or expired. Reconnect in the platform.');
  const client=new ScopedReadClient({origin,token:saved.access_token});
  console.log(JSON.stringify(await client.read(process.argv[3]??'connection'),null,2));
 }else{console.log('FREEDOM_CLIENT_KIND=storefront|supplier node client/cli.mjs connect\nnode client/cli.mjs read connection|catalog|stores|listings|products|requests\n資料修改請在 https://freetwai.com/ 操作。');}
